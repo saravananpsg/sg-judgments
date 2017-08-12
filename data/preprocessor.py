@@ -4,30 +4,30 @@ import os
 import sys
 import bs4
 import re
-import calendar
 
 # from readability.readability import Document
 
 
 def get_title(soup):
-    return " ".join(soup.find(class_='title').get_text().split()).strip()
+    return '\t['.join(
+        " ".join(soup.find(
+            class_='title').get_text().split()).split('[', maxsplit=1))
 
 
 def get_authors(soup):
     return ';'.join(
         [" ".join(t.get_text().split())
          for t in soup('p', class_=re.compile(
-             r'[Jj]udg-[Aa]uthor|Judg-Date-Reserved'))
+             r'[Jj]udg-[Aa]uthor'))
          if t.get_text(strip=True) and
          not any(s in t.get_text().lower()
-                 for s in ['introduction', 'background', 'reserved', '.'] +
-                 [m.lower() for m in calendar.month_name if m])
+                 for s in ['introduction', 'background'])
          ])
 
 
 def get_case_details(soup):
     return '\t'.join(
-        [" ".join(t.get_text().split())
+        [" ".join(t.get_text().replace('\n', ';').split())
             for t in soup('td', class_='txt-body')
             if t.get_text(strip=True) and
             not any('Parties' in sibling.get_text() for sibling in
